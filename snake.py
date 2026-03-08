@@ -170,7 +170,10 @@ class SnakeGame:
     
     def run(self):
         """主游戏循环"""
-        curses.curs_set(0)
+        try:
+            curses.curs_set(0)
+        except:
+            pass  # 无终端环境下忽略
         self.stdscr.nodelay(True)
         
         while not self.game_over:
@@ -186,6 +189,11 @@ def select_difficulty(stdscr):
     """选择难度"""
     stdscr.clear()
     h, w = stdscr.getmaxyx()
+    try:
+        curses.curs_set(0)
+    except:
+        pass  # 无终端环境下忽略
+    stdscr.nodelay(False)  # 阻塞等待输入
     
     title = "🐍 贪吃蛇 - 选择难度"
     opts = [
@@ -203,15 +211,24 @@ def select_difficulty(stdscr):
     
     while True:
         key = stdscr.getch()
+        if key == -1:
+            continue  # 忽略无输入
         if key in [ord('1'), ord('2'), ord('3')]:
             idx = ord(key) - ord('1')
             return opts[idx][2]
+        elif key in [curses.KEY_EXIT, 27]:  # ESC 或 q 退出
+            return 150  # 默认普通难度
 
 
 def show_start_screen(stdscr):
     """显示开始界面"""
     stdscr.clear()
     h, w = stdscr.getmaxyx()
+    try:
+        curses.curs_set(0)
+    except:
+        pass  # 无终端环境下忽略
+    stdscr.nodelay(False)  # 阻塞等待输入
     
     title = "🐍 贪吃蛇 Snake Game"
     desc = "用方向键控制蛇吃到食物"
@@ -222,8 +239,11 @@ def show_start_screen(stdscr):
     stdscr.addstr(h//2 + 2, w//2 - len(tips)//2, tips, curses.A_BLINK)
     stdscr.refresh()
     
-    stdscr.nodelay(False)
-    stdscr.getch()
+    # 等待按键，忽略 -1
+    while True:
+        key = stdscr.getch()
+        if key != -1:
+            break
 
 
 def main(stdscr):
@@ -233,6 +253,11 @@ def main(stdscr):
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)   # 蛇 - 绿色
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)    # 食物 - 红色
         curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)   # 暂停提示 - 青色
+    
+    try:
+        curses.curs_set(0)
+    except:
+        pass  # 无终端环境下忽略
     
     # 显示开始界面
     show_start_screen(stdscr)
